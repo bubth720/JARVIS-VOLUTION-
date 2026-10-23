@@ -1,0 +1,30 @@
+name: Evolution local JVM
+on:
+  push:
+    branches: ['feat/evol-*']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: ./gradlew test :evolution-cli:installDist --no-daemon
+      - run: python3 scripts/check_demo.py
+      - name: Require actual passing tests
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as E
+          reports=list(Path('evolution-core/build/test-results/test').glob('TEST-*.xml'))
+          assert reports
+          roots=[E.parse(p).getroot() for p in reports]
+          assert sum(int(r.attrib['tests']) for r in roots)>0
+          assert all(int(r.attrib.get(k,0))==0 for r in roots for k in ['failures','errors','skipped'])
+          PY

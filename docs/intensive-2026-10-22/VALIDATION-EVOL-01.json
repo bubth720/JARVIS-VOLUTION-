@@ -1,0 +1,16 @@
+{
+  "mission": "EVOL-01",
+  "base": "36d09339aa93869c36c0981800918cde818637ac",
+  "tests": {
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "platform": "Linux JVM17 SQLite via sqlite-jdbc",
+  "demo_incidents_persisted": 100,
+  "demo_reopen_export_retention": "PASS",
+  "android_tested": false,
+  "runtime_integrations": false,
+  "automatic_patch_execution": false
+}
