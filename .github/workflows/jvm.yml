@@ -18,12 +18,13 @@ jobs:
       - run: ./gradlew test :evolution-cli:installDist --no-daemon
       - run: python3 scripts/check_demo.py
       - run: python3 scripts/check_diagnostic_demo.py
+      - run: python3 scripts/check_proposal_policy_demo.py
       - name: Require actual passing tests
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import xml.etree.ElementTree as E
-          reports=list(Path('evolution-core/build/test-results/test').glob('TEST-*.xml'))
+          reports=list(Path('.').glob('evolution-*/build/test-results/test/TEST-*.xml'))
           assert reports
           roots=[E.parse(p).getroot() for p in reports]
           assert sum(int(r.attrib['tests']) for r in roots)>0

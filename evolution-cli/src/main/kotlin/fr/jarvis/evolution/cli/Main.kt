@@ -8,6 +8,7 @@ import java.nio.file.StandardOpenOption
 
 fun main(args: Array<String>) {
     try {
+        if(args.firstOrNull()=="proposal-policy-demo") { proposalPolicyDemo(args); return }
         if(args.firstOrNull() in setOf("diagnostic-demo","diagnose","cases","case-state")) { diagnosticsMain(args); return }
         require(args.size in 2..3) { "USAGE" }
         val path=Path.of(args[1]).toAbsolutePath()

@@ -42,3 +42,22 @@ Les cas utilisent une base diagnostique séparée, bornée4MiB : au maximum128ca
 `case-state <cases-db> <id> <OPEN|ACKNOWLEDGED|RESOLVED|REJECTED>` est une décision explicite de l'hôte/utilisateur. Aucun acquittement, réouverture ou résolution automatique n'est effectué par le moteur. Le journal conserve les transitions après reprise. Ni règle, CLI ni recommandation n'exécute de réparation.
 
 Voir [rapport EVOL-02](docs/intensive-2026-10-22/REPORT-EVOL-02.md).
+
+## EVOL-03 — tranche de politiques, mission bloquée
+
+**PARTIAL / BLOCKED** : la sandbox OS n'est pas qualifiée dans cet environnement. L'essai unique de bubblewrap0.12.0, avec `/bin/true` et un filesystem minimal, a échoué : `bwrap: setting up uid map: Read-only file system` (exit1). Aucune nouvelle tentative inchangée ni contournement. Aucun code non fiable, patch proposé ou correctif JARVIS n'est exécuté.
+
+```sh
+./gradlew test :evolution-cli:installDist
+python3 scripts/check_proposal_policy_demo.py
+# Crée uniquement une fixture neuve, vérifie la politique et constate NOT_RUN :
+evolution-cli/build/install/evolution-cli/bin/evolution-cli proposal-policy-demo /tmp/mon-nouveau-lab-politique
+```
+
+Code réellement disponible : validation stricte d'un diff textuel borné (fichiers Kotlin/Java explicitement autorisés sous `src/`, hunks de remplacement, mode100644), refus des chemins ambigus/symlinks/renommages/binaires, SHA-256, signatures Ed25519 liées à une origine épinglée par l'hôte, mission/base/référence UNIFIED/expiration, file de revue durable contenant seulement des métadonnées hachées. Les clefs privées de démo sont éphémères en RAM, jamais exportées. Une signature d'origine n'est pas une autorisation utilisateur. Une approbation de laboratoire n'est pas un droit d'exécution.
+
+`RestrictedTrialRunner` refuse **toujours** avec `NOT_RUN/SANDBOX_NOT_QUALIFIED`, sans option de déblocage, appel système, Git apply ou lancement de processus. Aucun checkout/snapshot privé n'est créé/traité. Le contrôle des fichiers ne visite que les chemins déclarés d'une fixture explicitement marquée synthétique, en lecture seule.
+
+Cette tranche ne qualifie ni la correspondance d'un diff avec un checkout Git réel, ni les commandes de build, quotas CPU/RAM/stockage ou restaurations de sandbox. La base du patch de démo est fictive et annoncée telle quelle. L'intégrité par chaîne de hachage détecte une corruption du journal, mais n'authentifie pas à elle seule un humain ou un attaquant capable de réécrire les métadonnées. Le futur hôte de confiance doit afficher le contenu exact et appliquer les permissions CORE ; aucune liaison à CORE n'est présente.
+
+EVOL-04 reste **non éligible** tant qu'EVOL-03 ne dispose pas d'un véritable essai isolé qualifié. Voir [rapport EVOL-03](docs/intensive-2026-10-22/REPORT-EVOL-03.md).

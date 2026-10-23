@@ -1,0 +1,29 @@
+{
+  "mission": "EVOL-03",
+  "status": "BLOCKED",
+  "implementation": "PARTIAL",
+  "base": "0abd5f96caa27ee1e73a623d538e48555a02ce76",
+  "unified_reference": "bd283dad3a57effa276f7f4441901839d2834d5c",
+  "tests": {
+    "tests": 38,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_tests_executed": 13,
+  "unchanged_tests_reused_after_previous_success": 25,
+  "policy_signature_review_demo": "PASS",
+  "runtime_patch_trial": "NOT_RUN",
+  "untrusted_execution": false,
+  "private_snapshots_processed": false,
+  "sandbox_qualified": false,
+  "os_probe": {
+    "tool": "bubblewrap 0.12.0",
+    "program": "/bin/true",
+    "exit_code": 1,
+    "diagnostic": "bwrap: setting up uid map: Read-only file system",
+    "attempts": 1
+  },
+  "evol_04_dependency_satisfied": false,
+  "mission_complete": false
+}
