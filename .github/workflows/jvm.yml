@@ -17,6 +17,7 @@ jobs:
           java-version: '17'
       - run: ./gradlew test :evolution-cli:installDist --no-daemon
       - run: python3 scripts/check_demo.py
+      - run: python3 scripts/check_diagnostic_demo.py
       - name: Require actual passing tests
         run: |
           python3 - <<'PY'

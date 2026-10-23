@@ -8,6 +8,7 @@ import java.nio.file.StandardOpenOption
 
 fun main(args: Array<String>) {
     try {
+        if(args.firstOrNull() in setOf("diagnostic-demo","diagnose","cases","case-state")) { diagnosticsMain(args); return }
         require(args.size in 2..3) { "USAGE" }
         val path=Path.of(args[1]).toAbsolutePath()
         when(args[0]) {
@@ -46,7 +47,7 @@ fun main(args: Array<String>) {
         }
     } catch (_: Exception) {
         // Never include filesystem paths, input values or SQL/exception details in diagnostic output.
-        System.err.println("REFUSED_OR_UNAVAILABLE: demo <new-db> | list <db> [MODULE] | export <db> <new-json> | purge <db> <now-ms>")
+        System.err.println("REFUSED_OR_UNAVAILABLE: demo <new-db> | list <db> [MODULE] | export <db> <new-json> | purge <db> <now-ms> | diagnostic-demo <new-dir> | diagnose <events-db> <cases-db> [now-ms] | cases <cases-db> [MODULE] | case-state <cases-db> <id> <STATE>")
         kotlin.system.exitProcess(2)
     }
 }

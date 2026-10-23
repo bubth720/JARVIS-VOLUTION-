@@ -22,3 +22,23 @@ L'export est expurgé de contenu et identifiants personnels ; aucune garantie st
 Dépendances épinglées : Kotlin2.1.20 et coroutines1.10.2 (Apache2), sqlite-jdbc3.46.1.0 (Apache2, SQLite domaine public), JUnit4.13.2 pour tests (EPL1). Gradle8.13 avec SHA-256 de distribution vérifié par le wrapper. Le téléchargement d'outils/dépendances est requis au premier build ; le runtime et ses tests de démonstration fonctionnent ensuite hors ligne avec le cache. Aucun poids de modèle n'est téléchargé.
 
 Voir [rapport EVOL-01](docs/intensive-2026-10-22/REPORT-EVOL-01.md). Pas de fusion main, installation ou auto-application de réparation.
+
+## EVOL-02 — diagnostics sur preuves
+
+```sh
+./gradlew test :evolution-cli:installDist
+python3 scripts/check_diagnostic_demo.py
+# Nouveau répertoire synthétique, quatre cas contrastés et un contrôle négatif :
+evolution-cli/build/install/evolution-cli/bin/evolution-cli diagnostic-demo /tmp/mon-nouveau-diagnostic
+evolution-cli/build/install/evolution-cli/bin/evolution-cli cases /tmp/mon-nouveau-diagnostic/cases.db
+# Évaluation explicite de données existantes, aucun traitement périodique :
+evolution-cli/build/install/evolution-cli/bin/evolution-cli diagnose /tmp/mon-nouveau-diagnostic/events.db /tmp/mon-nouveau-diagnostic/cases.db 1000000
+```
+
+Six règles déterministes désactivables : signal de latence répété, mémoire élevée, fichier indisponible, permission refusée, libération UNKNOWN et service indisponible. Ce sont des **causes possibles**, pas des mesures natives ou réparations. Les budgets/protections CORE/LLM/VOICE ne sont jamais modifiés. Les occurrences dédupliquées n'ont pas de chronologie individuelle : si la première occurrence précède la fenêtre, la fréquence récente reste UNKNOWN. Une métrique obligatoire manquante est également UNKNOWN, même sur un échantillon ancien ; elle ne devient pas un résultat sain. La latence du snapshot est le dernier échantillon, pas une moyenne ni la preuve que chaque occurrence dépasse le seuil.
+
+Les cas utilisent une base diagnostique séparée, bornée4MiB : au maximum128cas,32snapshots immuables par cas,4096preuves et4096décisions. Une capacité pleine provoque un refus transactionnel, jamais la suppression silencieuse de preuves. Chaque snapshot expurgé conserve l'ID de sa source et le SHA-256 du JSON canonique produit par `SnapshotJson`; il reste consultable lorsque la rétention technique purge l'incident original. Cela atteste une observation logicielle, pas l'état physique absolu d'Android.
+
+`case-state <cases-db> <id> <OPEN|ACKNOWLEDGED|RESOLVED|REJECTED>` est une décision explicite de l'hôte/utilisateur. Aucun acquittement, réouverture ou résolution automatique n'est effectué par le moteur. Le journal conserve les transitions après reprise. Ni règle, CLI ni recommandation n'exécute de réparation.
+
+Voir [rapport EVOL-02](docs/intensive-2026-10-22/REPORT-EVOL-02.md).

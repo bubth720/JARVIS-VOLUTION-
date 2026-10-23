@@ -1,0 +1,18 @@
+{
+  "mission": "EVOL-02",
+  "base": "9cc6288b537d71743fbb634a8d098ce304441464",
+  "tests": {
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "platform": "Linux JVM17 SQLite",
+  "demo_cases_persisted": 4,
+  "evidence_ids_sha256_verified": true,
+  "human_ack_reopen_idempotency": "PASS",
+  "regression_100_incidents": "PASS",
+  "initial_test_failure": "missing required metrics in stale sample was skipped; fixed in RuleEngine without changing tests",
+  "repair_executed": false,
+  "android_tested": false
+}
