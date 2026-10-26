@@ -25,7 +25,7 @@ class DiagnosticTest {
         val rows=listOf(row(metrics=emptyMap()),row(first=0,last=999999),row(first=1000000,last=1000001))
         val result=RuleEngine().evaluate(rows,1000000)
         assertTrue(result.candidates.isEmpty());assertEquals(3,result.unknown.size)
-        assertEquals(EvidenceIssue.entries.toSet(),result.unknown.map{it.reason}.toSet())
+        assertEquals(setOf(EvidenceIssue.MISSING_METRICS,EvidenceIssue.INCOMPLETE_WINDOW,EvidenceIssue.FUTURE_EVENT),result.unknown.map{it.reason}.toSet())
         assertTrue(result.insufficientData)
     }
     @Test fun oldLowSeverityAndLowRatiosDoNotGenerateFalseDetections() {

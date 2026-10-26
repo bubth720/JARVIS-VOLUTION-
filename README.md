@@ -61,3 +61,74 @@ Code réellement disponible : validation stricte d'un diff textuel borné (fichi
 Cette tranche ne qualifie ni la correspondance d'un diff avec un checkout Git réel, ni les commandes de build, quotas CPU/RAM/stockage ou restaurations de sandbox. La base du patch de démo est fictive et annoncée telle quelle. L'intégrité par chaîne de hachage détecte une corruption du journal, mais n'authentifie pas à elle seule un humain ou un attaquant capable de réécrire les métadonnées. Le futur hôte de confiance doit afficher le contenu exact et appliquer les permissions CORE ; aucune liaison à CORE n'est présente.
 
 EVOL-04 reste **non éligible** tant qu'EVOL-03 ne dispose pas d'un véritable essai isolé qualifié. Voir [rapport EVOL-03](docs/intensive-2026-10-22/REPORT-EVOL-03.md).
+
+
+## EVOLUTION-FINAL-01 — supervision et comparaisons sous contrôle humain
+
+Le diagnostic hôte ajoute les interruptions et files saturées (règles v2).
+`DiagnosticMonitor` est inactif par défaut ; un hôte active puis appelle `poll(now)`.
+Aucun thread permanent, commande de réparation ou changement des décisions humaines.
+Une erreur de stockage/sonde reste UNKNOWN ; une fenêtre tronquée ou des métriques manquantes restent INSUFFICIENT_DATA.
+
+`PerformanceRun` conserve 5 à 256 échantillons de latence en millisecondes, après échauffement exclu par l'hôte.
+Comparer exige le même module, les mêmes empreintes de charge, environnement et configuration, le même échauffement, la même provenance et le même nombre d'échantillons.
+Les révisions avant/après peuvent différer. La médiane et le p95 (rang supérieur) sont déterministes.
+Une variation doit atteindre **10 % et 5 ms** ; une régression médiane ou p95 prévaut sur une amélioration de l'autre.
+Ce résultat est descriptif, sans preuve de causalité ni significativité statistique.
+
+L'origine `HOST_OBSERVATION` est déclarée par l'hôte : EVOLUTION n'atteste pas la véracité d'un import.
+`SYNTHETIC` reste distinct. Les occurrences dédupliquées des incidents ne sont jamais utilisées pour inventer des échantillons indépendants.
+L'historique séparé SQLite est immuable via l'API, versionné et borné à 128 paires / 4 MiB.
+Les SHA-256 détectent une altération accidentelle des snapshots ; ils ne remplacent pas une signature ou la protection du système de fichiers.
+La réouverture vérifie le schéma, les données et les empreintes ; corruption/capacité refusées, sans reset ni suppression.
+
+Après `./gradlew test :evolution-cli:installDist` :
+
+```sh
+# Test bout en bout explicitement synthétique ; aucun benchmark/patch exécuté :
+python3 scripts/check_evolution_demo.py
+evolution-cli/build/install/evolution-cli/bin/evolution-cli evolution-demo /tmp/evolution-lab-neuf
+evolution-cli/build/install/evolution-cli/bin/evolution-cli history /tmp/evolution-lab-neuf/history.db
+
+# Import des mesures fournies par votre hôte ; CSV à une ligne, 5..256 nombres séparés par virgules :
+evolution-cli/build/install/evolution-cli/bin/evolution-cli compare /tmp/history.db contexte.properties avant.csv apres.csv 10000
+
+# Rapport HTML hors ligne, export neuf obligatoire ; now-ms doit correspondre aux timestamps des événements :
+evolution-cli/build/install/evolution-cli/bin/evolution-cli supervise /tmp/evolution-lab-neuf/events.db /tmp/evolution-lab-neuf/cases.db /tmp/evolution-lab-neuf/history.db /tmp/evolution-lab-neuf/reviews.log /tmp/supervision-neuve.html 10000
+```
+
+Le fichier `contexte.properties` contient exactement ces huit clés (sans texte libre à persister) :
+
+```properties
+module=LLM
+workloadSha256=<empreinte SHA-256 hexadécimale de 64 caractères>
+environmentSha256=<empreinte de la machine et du runtime>
+configurationSha256=<empreinte des paramètres fixes>
+beforeRevision=<commit Git de 40 caractères hexadécimaux>
+afterRevision=<commit Git de 40 caractères hexadécimaux>
+warmups=10
+origin=HOST_OBSERVATION
+```
+
+L'hôte doit construire ces empreintes à partir de paramètres fixes et documentés, sans données personnelles.
+Les deux séries sont importées ensemble et doivent réellement correspondre au contexte déclaré.
+Le rapport ne lance aucun serveur et ne charge aucune ressource distante. Il contient diagnostics, preuves, recommandations, historique et états de revue.
+Le CSP interdit scripts, formulaires et ressources ; l'export n'écrase aucun fichier.
+
+Revue explicite par un humain dans un terminal de confiance, après présentation du diff exact par l'hôte :
+
+```sh
+evolution-cli/build/install/evolution-cli/bin/evolution-cli review-list /tmp/reviews.log 10000
+evolution-cli/build/install/evolution-cli/bin/evolution-cli review-decide /tmp/reviews.log <id> <sha256-exact> APPROVE_FOR_LAB 10000
+evolution-cli/build/install/evolution-cli/bin/evolution-cli review-decide /tmp/reviews.log <id> <sha256-exact> REJECT 10001
+```
+
+Ces commandes utilisent le journal existant `HumanReviewQueue` ; elles ne créent aucune proposition non vérifiée.
+L'intégrateur passe d'abord par `ProposalVerifier`, puis enregistre les métadonnées vérifiées.
+`TrialPreparation.inspect` relit le journal et lie signature vérifiée, contenu, origine, base, référence UNIFIED, identité et expiration.
+Rejet, révocation, expiration ou métadonnées différentes empêchent de réutiliser une approbation.
+Même `APPROVED_FOR_LAB` retourne **mayExecute=false**, **productionAuthorized=false**, **SANDBOX_NOT_QUALIFIED**.
+`RestrictedTrialRunner` reste inchangé et refuse toujours. Aucun patch ne peut être appliqué ni exécuté par ces commandes.
+
+La boucle expérimentale est préparée : observer → diagnostiquer → documenter les preuves → comparer les mesures → recommander → revue humaine → laboratoire bloqué.
+La qualification OS, l'exécution isolée, le rollback expérimental et l'intégration réelle à JARVIS restent à réaliser et ne sont pas déclarés validés.

@@ -27,7 +27,7 @@ class DiagnosticMonitorTest {
     }
     @Test fun missingQueueAndInvalidTimesAreUnknown() {
         val payload=Sanitizer.sanitize(EvolutionEvent(Module.CORE,EventCode.QUEUE_FULL,Severity.WARNING)).payload
-        val row=StoredIncident("queue",Module.CORE,EventCode.QUEUE_FULL,Severity.WARNING,1000,1000,1,payload)
+        val row=StoredIncident(java.util.UUID.randomUUID().toString(),Module.CORE,EventCode.QUEUE_FULL,Severity.WARNING,1000,1000,1,payload)
         assertEquals(EvidenceIssue.MISSING_METRICS,RuleEngine().evaluate(listOf(row),1000).unknown.single().reason)
         assertEquals(EvidenceIssue.INVALID_METRICS,RuleEngine().evaluate(listOf(row.copy(firstAt=2000)),1000).unknown.single().reason)
         val valid=row.copy(payload=Sanitizer.sanitize(EvolutionEvent(Module.CORE,EventCode.QUEUE_FULL,Severity.WARNING,mapOf("queueSize" to 3))).payload)
