@@ -29,6 +29,7 @@ class ExperimentRepository(path: Path): AutoCloseable {
                     require(s.executeQuery("PRAGMA table_info(experiments)").use { r -> buildList { while(r.next()) add(r.getString("name")) } } ==
                         listOf("id","created_at","module","workload","environment","configuration","origin","warmups","before_revision","after_revision","before_samples","after_samples","before_digest","after_digest","comparator_version"))
                     require(s.executeQuery("PRAGMA quick_check").use { it.next(); it.getString(1)=="ok" })
+                    list() // Validate snapshots BEFORE any write pragma or schema statement.
                 }
                 s.execute("PRAGMA busy_timeout=1000"); s.execute("PRAGMA journal_mode=DELETE"); s.execute("PRAGMA synchronous=FULL")
                 val page=s.executeQuery("PRAGMA page_size").use { it.next(); it.getInt(1) }
@@ -37,7 +38,6 @@ class ExperimentRepository(path: Path): AutoCloseable {
                 s.execute("PRAGMA user_version=1")
             }
             try { Files.setPosixFilePermissions(absolute,PosixFilePermissions.fromString("rw-------")) } catch(_: UnsupportedOperationException) {}
-            list() // Reject invalid snapshots at opening, before accepting additional data.
         } catch(e: Exception) { db.close(); throw e }
     }
     @Synchronized fun record(id: String, now: Long, before: PerformanceRun, after: PerformanceRun): Experiment {
