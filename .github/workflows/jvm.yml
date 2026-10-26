@@ -1,7 +1,7 @@
 name: Evolution local JVM
 on:
   push:
-    branches: ['feat/evol-*']
+    branches: ['feat/evol-*', 'feat/evolution-*']
   pull_request:
 permissions:
   contents: read
