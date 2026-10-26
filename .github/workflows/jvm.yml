@@ -19,6 +19,8 @@ jobs:
       - run: python3 scripts/check_demo.py
       - run: python3 scripts/check_diagnostic_demo.py
       - run: python3 scripts/check_proposal_policy_demo.py
+      - run: python3 scripts/check_evolution_demo.py
+      - run: git diff --check
       - name: Require actual passing tests
         run: |
           python3 - <<'PY'
@@ -26,7 +28,9 @@ jobs:
           import xml.etree.ElementTree as E
           reports=list(Path('.').glob('evolution-*/build/test-results/test/TEST-*.xml'))
           assert reports
+          print('JUnit reports:',len(reports))
           roots=[E.parse(p).getroot() for p in reports]
-          assert sum(int(r.attrib['tests']) for r in roots)>0
+          print('Tests:',sum(int(r.attrib['tests']) for r in roots))
+          assert sum(int(r.attrib['tests']) for r in roots)>=51
           assert all(int(r.attrib.get(k,0))==0 for r in roots for k in ['failures','errors','skipped'])
           PY

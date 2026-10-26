@@ -47,6 +47,8 @@ class DiagnosticCaseRepository(path: Path) : AutoCloseable {
                     RuleId.REPEATED_LATENCY -> EventCode.SLOW_OPERATION;RuleId.MEMORY_PRESSURE -> EventCode.MEMORY_PRESSURE
                     RuleId.FILE_UNAVAILABLE -> EventCode.FILE_UNAVAILABLE;RuleId.PERMISSION_REFUSED -> EventCode.PERMISSION_REFUSED
                     RuleId.RELEASE_UNKNOWN -> EventCode.RELEASE_UNKNOWN;RuleId.SERVICE_UNAVAILABLE -> EventCode.SERVICE_UNAVAILABLE
+                    RuleId.CRASH_OBSERVED -> e.incident.code.also { require(it in setOf(EventCode.CRASH_OBSERVED,EventCode.PROCESS_INTERRUPTED)) }
+                    RuleId.QUEUE_SATURATION -> EventCode.QUEUE_FULL
                 }
                 require(e.incident.code==code && e.sha256==EvidenceLink.from(e.incident).sha256)
             }

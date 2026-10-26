@@ -3,9 +3,9 @@ package fr.jarvis.evolution.diagnostic
 import fr.jarvis.evolution.events.*
 import java.security.MessageDigest
 
-enum class RuleId { REPEATED_LATENCY, MEMORY_PRESSURE, FILE_UNAVAILABLE, PERMISSION_REFUSED, RELEASE_UNKNOWN, SERVICE_UNAVAILABLE }
+enum class RuleId { REPEATED_LATENCY, MEMORY_PRESSURE, FILE_UNAVAILABLE, PERMISSION_REFUSED, RELEASE_UNKNOWN, SERVICE_UNAVAILABLE, CRASH_OBSERVED, QUEUE_SATURATION }
 enum class CaseStatus { OPEN, ACKNOWLEDGED, RESOLVED, REJECTED }
-enum class EvidenceIssue { MISSING_METRICS, INCOMPLETE_WINDOW, FUTURE_EVENT }
+enum class EvidenceIssue { MISSING_METRICS, INCOMPLETE_WINDOW, FUTURE_EVENT, INVALID_METRICS }
 data class EvidenceLink(val incident: StoredIncident, val sha256: String) {
     companion object {
         fun from(incident: StoredIncident) = EvidenceLink(incident, digest(SnapshotJson.incidents(listOf(incident))))
@@ -21,7 +21,7 @@ data class DiagnosticCase(val id: String, val rule: RuleId, val owner: Module, v
     val status: CaseStatus, val createdAt: Long, val updatedAt: Long, val evidence: List<EvidenceLink>)
 /** Immutable rules. Thresholds are diagnostic-only, never native/hardware admission limits. */
 class RuleRepository(disabled: Set<RuleId> = emptySet(), val windowMs: Long = 300_000) {
-    val version=1
+    val version=2
     private val disabled=disabled.toSet()
     init { require(windowMs in 1000..86_400_000) }
     fun enabled(rule: RuleId) = rule !in disabled
@@ -39,14 +39,21 @@ class RuleEngine(private val rules: RuleRepository = RuleRepository()) {
                 EventCode.PERMISSION_REFUSED -> RuleId.PERMISSION_REFUSED
                 EventCode.RELEASE_UNKNOWN -> RuleId.RELEASE_UNKNOWN
                 EventCode.SERVICE_UNAVAILABLE -> RuleId.SERVICE_UNAVAILABLE
+                EventCode.CRASH_OBSERVED, EventCode.PROCESS_INTERRUPTED -> RuleId.CRASH_OBSERVED
+                EventCode.QUEUE_FULL -> RuleId.QUEUE_SATURATION
                 else -> continue
             }
             if(!rules.enabled(rule)) continue
+            if(row.firstAt<0 || row.lastAt<row.firstAt || row.occurrences<=0 ||
+                listOfNotNull(row.payload.latencyMs,row.payload.usedBytes,row.payload.limitBytes,row.payload.queueSize).any { !it.isFinite() || it<0 }) {
+                unknown+=UnknownEvidence(row.id,rule,EvidenceIssue.INVALID_METRICS);continue
+            }
             if(row.lastAt>now) { unknown+=UnknownEvidence(row.id,rule,EvidenceIssue.FUTURE_EVENT);continue }
             // Missing required measurements are a data-quality UNKNOWN even when the
             // sample is old; they must not disappear as a healthy negative observation.
             val missing = rule==RuleId.REPEATED_LATENCY && row.payload.latencyMs==null ||
-                rule==RuleId.MEMORY_PRESSURE && (row.payload.usedBytes==null || row.payload.limitBytes==null || row.payload.limitBytes<=0)
+                rule==RuleId.MEMORY_PRESSURE && (row.payload.usedBytes==null || row.payload.limitBytes==null || row.payload.limitBytes<=0) ||
+                rule==RuleId.QUEUE_SATURATION && row.payload.queueSize==null
             if(missing) { unknown+=UnknownEvidence(row.id,rule,EvidenceIssue.MISSING_METRICS);continue }
             if(row.lastAt<cutoff) continue
             val match=when(rule) {
@@ -60,6 +67,7 @@ class RuleEngine(private val rules: RuleRepository = RuleRepository()) {
                     if(used==null || limit==null || limit<=0) { unknown+=UnknownEvidence(row.id,rule,EvidenceIssue.MISSING_METRICS);false }
                     else used/limit>=0.85
                 }
+                RuleId.QUEUE_SATURATION -> row.payload.queueSize!!>0 && row.severity!=Severity.INFO
                 else -> row.severity!=Severity.INFO
             }
             if(match) matches+=DiagnosticCandidate(rule,row.module,row.severity,listOf(EvidenceLink.from(row)))
@@ -80,6 +88,8 @@ object RecommendationCatalog {
         RuleId.FILE_UNAVAILABLE -> "Vérifier la disponibilité du fichier auprès du propriétaire ; ne pas modifier les permissions automatiquement."
         RuleId.PERMISSION_REFUSED -> "Examiner l'autorisation avec CORE et l'utilisateur ; ne pas contourner le refus."
         RuleId.RELEASE_UNKNOWN -> "Conserver le blocage et demander une preuve de fin/libération ; ne pas réinitialiser les journaux."
+        RuleId.CRASH_OBSERVED -> "Examiner les interruptions avec le propriétaire ; aucune relance automatique."
+        RuleId.QUEUE_SATURATION -> "Vérifier le drainage et la charge avec le propriétaire ; ne pas augmenter les limites automatiquement."
         RuleId.SERVICE_UNAVAILABLE -> "Examiner l'état du module propriétaire et sa reprise contrôlée ; aucune réparation appliquée."
     }
 }
