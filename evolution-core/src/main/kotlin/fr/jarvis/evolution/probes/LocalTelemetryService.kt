@@ -26,7 +26,7 @@ class LocalTelemetryService(private val store: EventStore, capacity: Int = 64,
     @Synchronized fun setEnabled(value: Boolean) {
         enabled=value
         if(!value) { dropped.addAndGet(queue.size.toLong()); queue.clear() }
-        status=if(value) CollectorStatus.READY else CollectorStatus.DISABLED; publish()
+        status=if(!value) CollectorStatus.DISABLED else if(uncertain.get()>0) CollectorStatus.STORAGE_UNKNOWN else CollectorStatus.READY; publish()
     }
     @Synchronized override fun submit(event: EvolutionEvent): SubmitResult {
         if(!enabled) return SubmitResult.DISABLED
@@ -36,11 +36,11 @@ class LocalTelemetryService(private val store: EventStore, capacity: Int = 64,
         publish(); return if(accepted) SubmitResult.ACCEPTED else SubmitResult.SATURATED
     }
     /** A failed write is UNKNOWN, not automatically retried: commit acknowledgement can be ambiguous. */
-    fun drain(maxBatch: Int = 64): Int {
+    @Synchronized fun drain(maxBatch: Int = 64): Int {
         require(maxBatch in 1..256)
         var written=0
         repeat(maxBatch) {
-            if(!enabled) return written
+            if(!enabled || uncertain.get()>0) return written
             val event=queue.poll() ?: return written
             try { store.append(event,clock()); persisted.incrementAndGet(); written++ }
             catch (_: Exception) { uncertain.incrementAndGet(); status=CollectorStatus.STORAGE_UNKNOWN; publish(); return written }
