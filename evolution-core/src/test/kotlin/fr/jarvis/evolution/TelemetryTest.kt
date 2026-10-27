@@ -103,6 +103,40 @@ class TelemetryTest {
         assertEquals(1,service.snapshot().uncertain);assertEquals(0,service.drain());assertEquals(1,writes)
         assertFalse(service.snapshot().toString().contains("PRIVATE"))
     }
+    @Test fun uncertainWriteBlocksRemainingQueueEvenAfterConsentToggle() {
+        var writes=0
+        val failing=object: EventStore {
+            override fun append(event:SanitizedEvent,now:Long) { writes++;error("synthetic uncertain ACK") }
+            override fun query(module:Module?,since:Long,limit:Int)=emptyList<StoredIncident>()
+            override fun prune(now:Long)=0
+            override fun close() {}
+        }
+        val service=LocalTelemetryService(failing);service.setEnabled(true)
+        repeat(2) { service.submit(event()) };service.drain()
+        assertEquals(1,writes);assertEquals(1,service.snapshot().queued)
+        service.drain();assertEquals(1,writes)
+        service.setEnabled(false);service.setEnabled(true);service.submit(event());service.drain()
+        assertEquals(1,writes);assertEquals(CollectorStatus.STORAGE_UNKNOWN,service.snapshot().status)
+    }
+    @Test fun disableSerializesWithInFlightWriteAndDropsRemainingQueue() {
+        val entered=java.util.concurrent.CountDownLatch(1);val release=java.util.concurrent.CountDownLatch(1)
+        var writes=0
+        val store=object: EventStore {
+            override fun append(event:SanitizedEvent,now:Long) { entered.countDown();check(release.await(5,java.util.concurrent.TimeUnit.SECONDS));writes++ }
+            override fun query(module:Module?,since:Long,limit:Int)=emptyList<StoredIncident>()
+            override fun prune(now:Long)=0
+            override fun close() {}
+        }
+        val service=LocalTelemetryService(store);service.setEnabled(true);repeat(2) {service.submit(event())}
+        val pool=java.util.concurrent.Executors.newFixedThreadPool(2)
+        try {
+            val drain=pool.submit<Int> { service.drain(1) };assertTrue(entered.await(2,java.util.concurrent.TimeUnit.SECONDS))
+            val disabled=pool.submit {service.setEnabled(false)}
+            release.countDown();assertEquals(1,drain.get(5,java.util.concurrent.TimeUnit.SECONDS).toInt());disabled.get(5,java.util.concurrent.TimeUnit.SECONDS)
+            assertEquals(0,service.drain());assertEquals(1,writes);assertEquals(0,service.snapshot().queued)
+            assertFalse(service.snapshot().enabled)
+        } finally {release.countDown();pool.shutdownNow()}
+    }
     @Test fun schedulerHasNoBackgroundThreadAndHonorsExplicitInterval() {
         BoundedEventStore(path()).use { store ->
             var calls=0; val service=LocalTelemetryService(store);service.setEnabled(true)
