@@ -1,0 +1,241 @@
+{
+    "schema": "jarvis.evolution.campaign-comparison/1",
+    "comparatorVersion": 1,
+    "before": "8f77a8d008fba4b03acaed51a15c6c4f443114d0",
+    "after": "b1224ae612999ac6abe6387f50778694b7e16168",
+    "status": "REGRESSION",
+    "executionAuthorized": false,
+    "summary": {
+        "FIXED": 2,
+        "REGRESSED": 0,
+        "STILL_FAILING": 4,
+        "STABLE_PASS": 58,
+        "NEW_PASS": 8,
+        "NEW_FAIL": 2,
+        "MISSING_AFTER": 0
+    },
+    "tests": [
+        {
+            "api": 29,
+            "kind": "AUDIT",
+            "test": "c8_generalAnswerIsNeverPresentedAsDocumentary",
+            "change": "FIXED"
+        },
+        {
+            "api": 29,
+            "kind": "AUDIT",
+            "test": "k_sphereStillAtEveryNonAnswerTransition",
+            "change": "STILL_FAILING"
+        },
+        {
+            "api": 29,
+            "kind": "AUDIT",
+            "test": "p_sphereStillAndCheapOutsideTheAnswer",
+            "change": "NEW_FAIL"
+        },
+        {
+            "api": 29,
+            "kind": "AUDIT",
+            "test": "q_unseenInjectionsNeverBecomeInstructions",
+            "change": "NEW_PASS"
+        },
+        {
+            "api": 29,
+            "kind": "AUDIT",
+            "test": "r_absentValueInAFoundDocumentIsNotInvented",
+            "change": "NEW_PASS"
+        },
+        {
+            "api": 29,
+            "kind": "AUDIT",
+            "test": "s_tornJournalLineNeverLosesTheNextExchange",
+            "change": "NEW_PASS"
+        },
+        {
+            "api": 29,
+            "kind": "AUDIT",
+            "test": "t_storageFullIsRefusedCleanlyAndRecovers",
+            "change": "NEW_PASS"
+        },
+        {
+            "api": 35,
+            "kind": "QUALIFICATION",
+            "test": "c_realEngineStatesCardsMenuLandscapeBackground",
+            "change": "STILL_FAILING"
+        },
+        {
+            "api": 35,
+            "kind": "QUALIFICATION",
+            "test": "e_galleryCapturesAndBeforeAfterBench",
+            "change": "STILL_FAILING"
+        },
+        {
+            "api": 35,
+            "kind": "AUDIT",
+            "test": "c8_generalAnswerIsNeverPresentedAsDocumentary",
+            "change": "FIXED"
+        },
+        {
+            "api": 35,
+            "kind": "AUDIT",
+            "test": "k_sphereStillAtEveryNonAnswerTransition",
+            "change": "STILL_FAILING"
+        },
+        {
+            "api": 35,
+            "kind": "AUDIT",
+            "test": "p_sphereStillAndCheapOutsideTheAnswer",
+            "change": "NEW_FAIL"
+        },
+        {
+            "api": 35,
+            "kind": "AUDIT",
+            "test": "q_unseenInjectionsNeverBecomeInstructions",
+            "change": "NEW_PASS"
+        },
+        {
+            "api": 35,
+            "kind": "AUDIT",
+            "test": "r_absentValueInAFoundDocumentIsNotInvented",
+            "change": "NEW_PASS"
+        },
+        {
+            "api": 35,
+            "kind": "AUDIT",
+            "test": "s_tornJournalLineNeverLosesTheNextExchange",
+            "change": "NEW_PASS"
+        },
+        {
+            "api": 35,
+            "kind": "AUDIT",
+            "test": "t_storageFullIsRefusedCleanlyAndRecovers",
+            "change": "NEW_PASS"
+        }
+    ],
+    "budgets": [
+        {
+            "api": 29,
+            "phase": "THINKING",
+            "code": "WINDOW_FRAMES_OVER_BUDGET",
+            "before": null,
+            "after": 12,
+            "limit": 5
+        },
+        {
+            "api": 29,
+            "phase": "REST_AFTER_ANSWER",
+            "code": "SPHERE_REDRAW_OUTSIDE_ANSWER",
+            "before": null,
+            "after": 12,
+            "limit": 1
+        },
+        {
+            "api": 35,
+            "phase": "THINKING",
+            "code": "WINDOW_FRAMES_OVER_BUDGET",
+            "before": null,
+            "after": 9,
+            "limit": 5
+        },
+        {
+            "api": 35,
+            "phase": "REST_AFTER_ANSWER",
+            "code": "SPHERE_REDRAW_OUTSIDE_ANSWER",
+            "before": null,
+            "after": 13,
+            "limit": 1
+        }
+    ],
+    "proposals": [
+        {
+            "code": "TEST_STILL_FAILING",
+            "api": 29,
+            "subject": "AUDIT:k_sphereStillAtEveryNonAnswerTransition",
+            "suggestion": "Reproduire k_sphereStillAtEveryNonAnswerTransition seul sur API 29, comparer au dernier SHA vert, proposer un correctif cibl\u00e9 \u00e0 la revue humaine.",
+            "evidence": "campaign b1224ae61299 AUDIT k_sphereStillAtEveryNonAnswerTransition",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "TEST_NEW_FAIL",
+            "api": 29,
+            "subject": "AUDIT:p_sphereStillAndCheapOutsideTheAnswer",
+            "suggestion": "Reproduire p_sphereStillAndCheapOutsideTheAnswer seul sur API 29, comparer au dernier SHA vert, proposer un correctif cibl\u00e9 \u00e0 la revue humaine.",
+            "evidence": "campaign b1224ae61299 AUDIT p_sphereStillAndCheapOutsideTheAnswer",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "TEST_STILL_FAILING",
+            "api": 35,
+            "subject": "QUALIFICATION:c_realEngineStatesCardsMenuLandscapeBackground",
+            "suggestion": "Reproduire c_realEngineStatesCardsMenuLandscapeBackground seul sur API 35, comparer au dernier SHA vert, proposer un correctif cibl\u00e9 \u00e0 la revue humaine.",
+            "evidence": "campaign b1224ae61299 QUALIFICATION c_realEngineStatesCardsMenuLandscapeBackground",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "TEST_STILL_FAILING",
+            "api": 35,
+            "subject": "QUALIFICATION:e_galleryCapturesAndBeforeAfterBench",
+            "suggestion": "Reproduire e_galleryCapturesAndBeforeAfterBench seul sur API 35, comparer au dernier SHA vert, proposer un correctif cibl\u00e9 \u00e0 la revue humaine.",
+            "evidence": "campaign b1224ae61299 QUALIFICATION e_galleryCapturesAndBeforeAfterBench",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "TEST_STILL_FAILING",
+            "api": 35,
+            "subject": "AUDIT:k_sphereStillAtEveryNonAnswerTransition",
+            "suggestion": "Reproduire k_sphereStillAtEveryNonAnswerTransition seul sur API 35, comparer au dernier SHA vert, proposer un correctif cibl\u00e9 \u00e0 la revue humaine.",
+            "evidence": "campaign b1224ae61299 AUDIT k_sphereStillAtEveryNonAnswerTransition",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "TEST_NEW_FAIL",
+            "api": 35,
+            "subject": "AUDIT:p_sphereStillAndCheapOutsideTheAnswer",
+            "suggestion": "Reproduire p_sphereStillAndCheapOutsideTheAnswer seul sur API 35, comparer au dernier SHA vert, proposer un correctif cibl\u00e9 \u00e0 la revue humaine.",
+            "evidence": "campaign b1224ae61299 AUDIT p_sphereStillAndCheapOutsideTheAnswer",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "WINDOW_FRAMES_OVER_BUDGET",
+            "api": 29,
+            "subject": "THINKING",
+            "suggestion": "Trouver le composant qui rafra\u00eechit la fen\u00eatre en phase THINKING (vu-m\u00e8tre, texte de statut) et borner sa cadence.",
+            "evidence": "campaign b1224ae61299 P THINKING after=12.0 limit=5.0",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "SPHERE_REDRAW_OUTSIDE_ANSWER",
+            "api": 29,
+            "subject": "REST_AFTER_ANSWER",
+            "suggestion": "Chercher l'\u00e9tat ou l'effet qui redessine la sph\u00e8re en phase REST_AFTER_ANSWER (boucle d'animation non arr\u00eat\u00e9e, \u00e9tat lu dans la port\u00e9e de dessin).",
+            "evidence": "campaign b1224ae61299 P REST_AFTER_ANSWER after=12.0 limit=1.0",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "WINDOW_FRAMES_OVER_BUDGET",
+            "api": 35,
+            "subject": "THINKING",
+            "suggestion": "Trouver le composant qui rafra\u00eechit la fen\u00eatre en phase THINKING (vu-m\u00e8tre, texte de statut) et borner sa cadence.",
+            "evidence": "campaign b1224ae61299 P THINKING after=9.0 limit=5.0",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        },
+        {
+            "code": "SPHERE_REDRAW_OUTSIDE_ANSWER",
+            "api": 35,
+            "subject": "REST_AFTER_ANSWER",
+            "suggestion": "Chercher l'\u00e9tat ou l'effet qui redessine la sph\u00e8re en phase REST_AFTER_ANSWER (boucle d'animation non arr\u00eat\u00e9e, \u00e9tat lu dans la port\u00e9e de dessin).",
+            "evidence": "campaign b1224ae61299 P REST_AFTER_ANSWER after=13.0 limit=1.0",
+            "mayExecute": false,
+            "state": "PROPOSED_FOR_HUMAN_REVIEW"
+        }
+    ]
+}
